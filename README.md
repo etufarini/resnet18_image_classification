@@ -1,8 +1,6 @@
 # Resnet18 Image Recognition
 Two-stage pipeline: training (PyTorch -> ONNX) and batch inference on an image folder with metrics and run logs.
 
-Italian version: `README.it.md`
-
 ## Minimal Structure
 - `src/train.py` -> training script and logic
 - `src/inference.py` -> inference script and logic
