@@ -6,10 +6,10 @@ Two-stage pipeline: training (PyTorch -> ONNX) and batch inference on an image f
 - `src/inference.py` -> inference script and logic
 - `src/backend.py` -> backend resolution (CPU/CUDA/ROCm) for train and inference
 - `src/augment.py` -> offline data augmentation on local dataset
+- `src/results_writer.py` -> utility for writing outputs/metrics in CSV/JSON format
 - `artifacts/runs/<timestamp>/` -> generated artifacts
 - `data/` -> dataset with `train/val/test`
 - `artifacts/inputs/` -> input images for inference (non-recursive)
-- `performance.md` -> technical notes and backend/performance architecture direction
 - `scripts/` -> quick scripts (`setup.sh`, `run_train.sh`, `run_inference.sh`)
 
 ## `src/` File Overview
@@ -17,6 +17,7 @@ Two-stage pipeline: training (PyTorch -> ONNX) and batch inference on an image f
 - `src/backend.py`: handles device/provider selection and backend checks (`auto|cpu|cuda|rocm`).
 - `src/inference.py`: runs ONNX Runtime inference on an image folder and saves `labels.csv` + metrics.
 - `src/train.py`: trains ResNet18, exports ONNX, and saves run artifacts (`metrics.json`, `labels.txt`, `confusion_matrix.csv`, `loss_plot.png`).
+- `src/results_writer.py`: helper for writing structured inference/training outputs.
 
 ## Environment Setup (venv)
 Use a virtual environment and install dependencies from repo root.
