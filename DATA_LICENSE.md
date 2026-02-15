@@ -1,22 +1,22 @@
 # Data License
 
-Questo progetto puo' utilizzare il dataset Kaggle **pest-dataset** con licenza dichiarata:
+This project may use the Kaggle dataset **pest-dataset** with the following declared license:
 - **CC0: Public Domain**
 
-## Cosa significa in pratica
-- Uso consentito anche in progetti open source e commerciali.
-- Redistribuzione consentita.
-- Modifica/derivazione consentita.
-- Attribuzione non obbligatoria (ma consigliata come buona pratica).
+## What this means in practice
+- Use is allowed in both open-source and commercial projects.
+- Redistribution is allowed.
+- Modification/derivative works are allowed.
+- Attribution is not required (but recommended as good practice).
 
-## Fonte dataset
-- Kaggle: `pest-dataset` (utente/dataset: `simranvolunesia/pest-dataset`)
+## Dataset source
+- Kaggle: `pest-dataset` (user/dataset: `simranvolunesia/pest-dataset`)
 
-## Buone pratiche adottate nel progetto
-- Mantenere nel README il riferimento alla fonte dati.
-- Non includere dati sensibili o contenuti non conformi alle policy della piattaforma.
-- Verificare sempre la licenza mostrata nella pagina Kaggle al momento del download.
+## Good practices adopted in this project
+- Keep a reference to the data source in the README.
+- Do not include sensitive data or content that does not comply with platform policies.
+- Always verify the license shown on the Kaggle page at download time.
 
-## Nota importante
-La licenza del dataset e' definita dal publisher su Kaggle e puo' essere aggiornata nel tempo.
-Prima di una release pubblica, ricontrolla la licenza nella pagina ufficiale del dataset.
+## Important note
+The dataset license is defined by the publisher on Kaggle and may be updated over time.
+Before a public release, recheck the license on the dataset's official page.
