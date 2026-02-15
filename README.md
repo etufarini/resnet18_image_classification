@@ -10,7 +10,7 @@ Two-stage pipeline: training (PyTorch -> ONNX) and batch inference on an image f
 - `artifacts/runs/<timestamp>/` -> generated artifacts
 - `data/` -> dataset with `train/val/test`
 - `artifacts/inputs/` -> input images for inference (non-recursive)
-- `scripts/` -> quick scripts (`setup.sh`, `run_train.sh`, `run_inference.sh`)
+- `scripts/` -> quick scripts (`setup.sh`, `run_train.sh`, `run_inference.sh`, `run_augment.sh`)
 
 ## `src/` File Overview
 - `src/augment.py`: generates augmented image copies inside `train/val/test`.
@@ -62,6 +62,17 @@ If you want augmentation, run it **before training** with `src/augment.py`:
 python3 src/augment.py --root data --per-image 2 --seed 42
 ```
 
+Equivalent quick script:
+
+```bash
+bash scripts/run_augment.sh -r data -p 2 -s 42
+```
+
+Script flags:
+- `-r` dataset root (maps to `--root`)
+- `-p` augmented copies per image (maps to `--per-image`)
+- `-s` random seed (maps to `--seed`)
+
 Main options:
 - `--root`: dataset root (default `data`)
 - `--per-image`: augmented copies per image (default `2`)
@@ -112,6 +123,7 @@ Parameters:
 - `--backend` (default `auto`) values: `auto|cpu|cuda|rocm`
 
 ## Quick Scripts
+- `bash scripts/run_augment.sh -r data -p 2 -s 42`
 - `bash scripts/run_train.sh -e 5 -b 16 -i 224 -l 1e-3 -s 42 -k auto`
 - `bash scripts/run_inference.sh -i artifacts/inputs -t 0.50 -k auto`
 
