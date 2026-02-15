@@ -88,19 +88,40 @@ def configure_torch_backend(
 ):
     torch = _import_torch()
     is_cuda = device.type == "cuda"
+    is_rocm = is_cuda and torch.version.hip is not None
+    is_mps = (
+        device.type == "mps"
+        and getattr(torch.backends, "mps", None) is not None
+        and torch.backends.mps.is_available()
+    )
+    matmul_precision = "default"
 
     # --- Automatic tuning --------------------------------------------------
     # Automatic configuration to improve training performance.
-    if is_cuda:
+    if is_cuda and not is_rocm:
+        # 1) CUDA tuning block
+        # Enable cuDNN autotuner and TF32 on CUDA builds.
         torch.backends.cudnn.benchmark = True
-        # TF32 only on CUDA, not on ROCm
-        if torch.version.hip is None:
-            if hasattr(torch.backends.cuda.matmul, "allow_tf32"):
-                torch.backends.cuda.matmul.allow_tf32 = True
-            if hasattr(torch.backends.cudnn, "allow_tf32"):
-                torch.backends.cudnn.allow_tf32 = True
-            if hasattr(torch, "set_float32_matmul_precision"):
-                torch.set_float32_matmul_precision("high")
+        if hasattr(torch.backends.cuda.matmul, "allow_tf32"):
+            torch.backends.cuda.matmul.allow_tf32 = True
+        if hasattr(torch.backends.cudnn, "allow_tf32"):
+            torch.backends.cudnn.allow_tf32 = True
+        if hasattr(torch, "set_float32_matmul_precision"):
+            torch.set_float32_matmul_precision("high")
+            matmul_precision = "high"
+    elif is_rocm:
+        # 2) ROCm tuning block
+        # Keep TF32 disabled and apply matmul precision policy.
+        torch.backends.cudnn.benchmark = False
+        if hasattr(torch, "set_float32_matmul_precision"):
+            torch.set_float32_matmul_precision("high")
+            matmul_precision = "high"
+    elif is_mps:
+        # 3) Metal (MPS) tuning block
+        # Use a higher matmul precision policy when available.
+        if hasattr(torch, "set_float32_matmul_precision"):
+            torch.set_float32_matmul_precision("high")
+            matmul_precision = "high"
 
     if not verbose:
         return
@@ -128,7 +149,8 @@ def configure_torch_backend(
         lines.append(
             f"[backend] cudnn.benchmark={torch.backends.cudnn.benchmark} "
             f"tf32.matmul={getattr(torch.backends.cuda.matmul, 'allow_tf32', 'n/a')} "
-            f"tf32.cudnn={getattr(torch.backends.cudnn, 'allow_tf32', 'n/a')}"
+            f"tf32.cudnn={getattr(torch.backends.cudnn, 'allow_tf32', 'n/a')} "
+            f"matmul_precision={matmul_precision}"
         )
     elif (
         device.type == "mps"
