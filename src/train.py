@@ -197,7 +197,7 @@ def train(
         device = resolve_torch_device(backend)
     except BackendError as exc:
         raise SystemExit(f"Invalid backend for training: {exc}") from exc
-    configure_torch_backend(backend, device, verbose=True)
+    configure_torch_backend(backend, device, verbose=False)
     amp_config = resolve_amp_config(device)
     scaler = None
     if amp_config["use_grad_scaler"]:
@@ -251,6 +251,12 @@ def train(
         final_train_loss = running_loss / max(samples_seen, 1)
         final_val_loss, val_top1, val_top3, _, _ = _eval(
             model, val_loader, criterion, device
+        )
+        # Epoch-level training log with losses only.
+        print(
+            f"[epoch {epoch + 1}/{epochs}] "
+            f"train_loss={final_train_loss:.6f} "
+            f"val_loss={final_val_loss:.6f}"
         )
         epoch_metrics.append(
             {
