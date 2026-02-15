@@ -112,8 +112,8 @@ Parameters:
 - `--backend` (default `auto`) values: `auto|cpu|cuda|rocm`
 
 ## Quick Scripts
-- `bash scripts/run_train.sh -e 5 -b 16 -i 224 -l 1e-3 -s 42`
-- `bash scripts/run_inference.sh -i artifacts/inputs -t 0.50`
+- `bash scripts/run_train.sh -e 5 -b 16 -i 224 -l 1e-3 -s 42 -k auto`
+- `bash scripts/run_inference.sh -i artifacts/inputs -t 0.50 -k auto`
 
 ## Expected Outputs
 Inside `artifacts/runs/<timestamp>/`:
