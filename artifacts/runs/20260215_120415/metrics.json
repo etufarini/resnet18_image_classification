@@ -1,0 +1,60 @@
+{
+  "run_id": "20260215_120415",
+  "params": {
+    "data_dir": "/home/emanuele/Documenti/hack/resnet18_image_recognition/data",
+    "epochs": 5,
+    "batch_size": 16,
+    "img_size": 224,
+    "lr": 0.001,
+    "seed": 42,
+    "backend": "auto"
+  },
+  "metrics": {
+    "final_train_loss": 0.162053,
+    "final_val_loss": 1.449417,
+    "val_top1": 0.668889,
+    "val_top3": 0.882222,
+    "test_loss": 1.186138,
+    "test_top1": 0.751111,
+    "test_top3": 0.915556,
+    "start_time": "2026-02-15 12:04:15",
+    "end_time": "2026-02-15 12:06:05",
+    "epoch_metrics": [
+      {
+        "epoch": 1,
+        "train_loss": 0.97966,
+        "val_loss": 1.131542,
+        "val_top1": 0.648889,
+        "val_top3": 0.906667
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.268546,
+        "val_loss": 0.944895,
+        "val_top1": 0.697778,
+        "val_top3": 0.924444
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.188116,
+        "val_loss": 1.033393,
+        "val_top1": 0.675556,
+        "val_top3": 0.9
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.110357,
+        "val_loss": 1.361332,
+        "val_top1": 0.688889,
+        "val_top3": 0.866667
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.162053,
+        "val_loss": 1.449417,
+        "val_top1": 0.668889,
+        "val_top3": 0.882222
+      }
+    ]
+  }
+}

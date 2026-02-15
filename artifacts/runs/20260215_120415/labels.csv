@@ -1,0 +1,13 @@
+file,pred_label,pred_conf,top3
+grasshopper_0.jpg,grasshopper,0.99,grasshopper:0.9868;armyworm:0.0102;beetle:0.0018
+mosquito_0.jpg,mosquito,1.00,mosquito:1.0000;sawfly:0.0000;aphids:0.0000
+mites_0.jpg,mites,1.00,mites:1.0000;beetle:0.0000;mosquito:0.0000
+mosquito_1.jpg,mosquito,1.00,mosquito:0.9994;mites:0.0005;sawfly:0.0001
+beetle_1.jpg,beetle,1.00,beetle:1.0000;aphids:0.0000;sawfly:0.0000
+armyworm_0.jpg,unknown,0.45,mosquito:0.4536;sawfly:0.2440;mites:0.0873
+beetle_0.jpg,beetle,0.54,beetle:0.5382;aphids:0.2646;mosquito:0.1774
+stem_borer_0.jpg,unknown,0.37,bollworm:0.3735;grasshopper:0.3732;aphids:0.1670
+aphids_0.jpg,aphids,0.99,aphids:0.9934;mites:0.0049;mosquito:0.0006
+bollworm_2.jpg,bollworm,0.98,bollworm:0.9832;sawfly:0.0078;aphids:0.0076
+bollworm_1.jpg,bollworm,1.00,bollworm:0.9998;aphids:0.0001;sawfly:0.0001
+bollworm_0.jpg,bollworm,0.94,bollworm:0.9362;aphids:0.0506;sawfly:0.0082
