@@ -13,7 +13,12 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, models, transforms
 
-from backend import BackendError, configure_torch_backend, resolve_torch_device
+from backend import (
+    BackendError,
+    configure_torch_backend,
+    resolve_amp_config,
+    resolve_torch_device,
+)
 from results_writer import write_training_artifacts, write_training_plot
 
 # --- Constants ------------------------------------------------------------
@@ -182,6 +187,13 @@ def train(
     except BackendError as exc:
         raise SystemExit(f"Invalid backend for training: {exc}") from exc
     configure_torch_backend(backend, device, verbose=True)
+    amp_config = resolve_amp_config(device)
+    scaler = None
+    if amp_config["use_grad_scaler"]:
+        if hasattr(torch, "amp") and hasattr(torch.amp, "GradScaler"):
+            scaler = torch.amp.GradScaler("cuda", enabled=True)
+        else:
+            scaler = torch.cuda.amp.GradScaler(enabled=True)
 
     train_loader, val_loader, test_loader, labels = _build_data(
         data_path, img_size, batch_size
@@ -204,10 +216,20 @@ def train(
             x = x.to(device)
             y = y.to(device)
             optimizer.zero_grad()
-            logits = model(x)
-            loss = criterion(logits, y)
-            loss.backward()
-            optimizer.step()
+            with torch.autocast(
+                device_type=device.type,
+                dtype=amp_config["dtype"],
+                enabled=amp_config["enabled"],
+            ):
+                logits = model(x)
+                loss = criterion(logits, y)
+            if scaler is not None:
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                loss.backward()
+                optimizer.step()
 
             running_loss += loss.item() * x.size(0)
             samples_seen += x.size(0)

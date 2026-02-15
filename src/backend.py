@@ -37,6 +37,13 @@ def _import_torch():
         raise BackendError("PyTorch is not installed or cannot be imported.") from exc
 
 
+# --- Support: device checks -----------------------------------------------
+# Utility checks for optional device backends.
+
+def _is_mps_available(torch):
+    return getattr(torch.backends, "mps", None) is not None and torch.backends.mps.is_available()
+
+
 # --- PyTorch device resolution -------------------------------------------
 # Select target device based on requested backend.
 
@@ -44,10 +51,7 @@ def resolve_torch_device(backend):
     torch = _import_torch()
     has_cuda = torch.cuda.is_available()
     has_rocm_build = torch.version.hip is not None
-    has_mps = (
-        getattr(torch.backends, "mps", None) is not None
-        and torch.backends.mps.is_available()
-    )
+    has_mps = _is_mps_available(torch)
     # 1) Choose device based on requested backend
     if backend == "auto":
         return (
@@ -89,11 +93,7 @@ def configure_torch_backend(
     torch = _import_torch()
     is_cuda = device.type == "cuda"
     is_rocm = is_cuda and torch.version.hip is not None
-    is_mps = (
-        device.type == "mps"
-        and getattr(torch.backends, "mps", None) is not None
-        and torch.backends.mps.is_available()
-    )
+    is_mps = device.type == "mps" and _is_mps_available(torch)
     matmul_precision = "default"
 
     # --- Automatic tuning --------------------------------------------------
@@ -133,7 +133,7 @@ def configure_torch_backend(
     lines.append(f"[backend] torch={torch.__version__}")
     lines.append(
         f"[backend] cuda={torch.version.cuda} hip={torch.version.hip} "
-        f"mps={getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available()}"
+        f"mps={_is_mps_available(torch)}"
     )
     if is_cuda and torch.cuda.is_available():
         idx = torch.cuda.current_device()
@@ -152,11 +152,7 @@ def configure_torch_backend(
             f"tf32.cudnn={getattr(torch.backends.cudnn, 'allow_tf32', 'n/a')} "
             f"matmul_precision={matmul_precision}"
         )
-    elif (
-        device.type == "mps"
-        and getattr(torch.backends, "mps", None) is not None
-        and torch.backends.mps.is_available()
-    ):
+    elif is_mps:
         # MPS diagnostics block
         lines.append("[backend] device=Apple MPS")
         lines.append("[backend] mps available")
@@ -165,6 +161,39 @@ def configure_torch_backend(
         lines.append("[backend] cuda not available")
 
     print("\n".join(lines))
+
+
+# --- AMP configuration -----------------------------------------------------
+# Resolve automatic mixed precision policy for the selected device.
+
+def resolve_amp_config(device):
+    torch = _import_torch()
+    is_cuda = device.type == "cuda"
+    is_mps = device.type == "mps" and _is_mps_available(torch)
+
+    # 1) Default AMP policy
+    amp_enabled = False
+    amp_dtype = None
+    use_grad_scaler = False
+
+    # 2) CUDA and ROCm policy
+    # Use float16 AMP with GradScaler on CUDA-like devices.
+    if is_cuda:
+        amp_enabled = True
+        amp_dtype = torch.float16
+        use_grad_scaler = True
+    # 3) Metal (MPS) policy
+    # Use float16 AMP without GradScaler.
+    elif is_mps:
+        amp_enabled = True
+        amp_dtype = torch.float16
+        use_grad_scaler = False
+
+    return {
+        "enabled": amp_enabled,
+        "dtype": amp_dtype,
+        "use_grad_scaler": use_grad_scaler,
+    }
 
 
 # --- ONNX Runtime provider resolution ------------------------------------
