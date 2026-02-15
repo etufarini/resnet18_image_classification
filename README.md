@@ -19,6 +19,13 @@ Two-stage pipeline: training (PyTorch -> ONNX) and batch inference on an image f
 - `src/train.py`: trains ResNet18, exports ONNX, and saves run artifacts (`metrics.json`, `labels.txt`, `confusion_matrix.csv`, `loss_plot.png`).
 - `src/results_writer.py`: helper for writing structured inference/training outputs.
 
+## Documentation
+- `docs/README_BACKEND.md`: backend library behavior and integration notes
+
+## Licenses
+- `LICENSE`: repository software license
+- `docs/licenses/DATA_LICENSE.md`: dataset license notes
+
 ## Environment Setup (venv)
 Use a virtual environment and install dependencies from repo root.
 
@@ -139,4 +146,4 @@ Inside `artifacts/runs/<timestamp>/`:
 
 ## Dataset License
 For the Kaggle `pest-dataset` (declared as `CC0: Public Domain`), see:
-- `DATA_LICENSE.md`
+- `docs/licenses/DATA_LICENSE.md`
