@@ -1,4 +1,4 @@
-# Resnet18 Image Recognition
+# Resnet18 Image Classification
 Two-stage pipeline: training (PyTorch -> ONNX) and batch inference on an image folder with metrics and run logs.
 
 ## Minimal Structure
