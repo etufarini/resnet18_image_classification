@@ -98,6 +98,7 @@ python3 src/train.py \
   --img_size 224 \
   --lr 1e-3 \
   --seed 42 \
+  --num_workers 4 \
   --backend auto
 ```
 
@@ -108,6 +109,7 @@ Parameters:
 - `--img_size` (default `224`)
 - `--lr` (default `1e-3`)
 - `--seed` (default `42`)
+- `--num_workers` (default `4`)
 - `--backend` (default `auto`) values: `auto|cpu|cuda|rocm`
 
 Note: the model uses a pretrained ResNet18 with early layers frozen, and trains `layer4` + `fc`.
@@ -131,7 +133,7 @@ Parameters:
 
 ## Quick Scripts
 - `bash scripts/run_augment.sh -r data -p 2 -s 42`
-- `bash scripts/run_train.sh -e 5 -b 16 -i 224 -l 1e-3 -s 42 -k auto`
+- `bash scripts/run_train.sh -e 5 -b 16 -i 224 -l 1e-3 -s 42 -w 4 -k auto`
 - `bash scripts/run_inference.sh -i artifacts/inputs -t 0.50 -k auto`
 
 ## Expected Outputs

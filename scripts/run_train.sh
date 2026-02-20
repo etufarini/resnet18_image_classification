@@ -16,6 +16,7 @@ BATCH_SIZE=16
 IMG_SIZE=224
 LR=1e-3
 SEED=42
+NUM_WORKERS=4
 BACKEND="auto"
 
 # --- Help -----------------------------------------------------------------
@@ -30,6 +31,7 @@ Usage: $(basename "$0") [options]
   -i IMG_SIZE    Image size (default: $IMG_SIZE)
   -l LR          Learning rate (default: $LR)
   -s SEED        Seed (default: $SEED)
+  -w WORKERS     DataLoader workers (default: $NUM_WORKERS)
   -k BACKEND     Backend (auto|cpu|cuda|rocm) (default: $BACKEND)
 EOF
 }
@@ -37,7 +39,7 @@ EOF
 # --- CLI parsing ----------------------------------------------------------
 # Parse command line options.
 
-while getopts ":d:e:b:i:l:s:k:h" opt; do
+while getopts ":d:e:b:i:l:s:w:k:h" opt; do
   case "$opt" in
     d) DATA_DIR="$OPTARG" ;;
     e) EPOCHS="$OPTARG" ;;
@@ -45,6 +47,7 @@ while getopts ":d:e:b:i:l:s:k:h" opt; do
     i) IMG_SIZE="$OPTARG" ;;
     l) LR="$OPTARG" ;;
     s) SEED="$OPTARG" ;;
+    w) NUM_WORKERS="$OPTARG" ;;
     k) BACKEND="$OPTARG" ;;
     h) usage; exit 0 ;;
     \?) echo "Invalid option: -$OPTARG" >&2; usage; exit 1 ;;
@@ -62,4 +65,5 @@ python3 "$ROOT/src/train.py" \
   --img_size "$IMG_SIZE" \
   --lr "$LR" \
   --seed "$SEED" \
+  --num_workers "$NUM_WORKERS" \
   --backend "$BACKEND"

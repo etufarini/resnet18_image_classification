@@ -39,6 +39,7 @@ def build_parser():
     parser.add_argument("--img_size", type=int, default=224)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument(
         "--backend",
         choices=BACKEND_CHOICES,
@@ -82,7 +83,7 @@ def _setup_run():
 # --- Support: data --------------------------------------------------------
 # Build transforms, datasets, and dataloaders.
 
-def _build_data(data_path, img_size, batch_size):
+def _build_data(data_path, img_size, batch_size, num_workers, pin_memory):
     # Shared preprocessing for all splits.
     base_transform = transforms.Compose(
         [
@@ -95,10 +96,18 @@ def _build_data(data_path, img_size, batch_size):
     train_ds = datasets.ImageFolder(data_path / "train", transform=base_transform)
     val_ds = datasets.ImageFolder(data_path / "val", transform=base_transform)
     test_ds = datasets.ImageFolder(data_path / "test", transform=base_transform)
+    # DataLoader tuning to reduce CPU-side input bottlenecks.
+    loader_kwargs = {
+        "num_workers": num_workers,
+        "pin_memory": pin_memory,
+    }
+    if num_workers > 0:
+        loader_kwargs["persistent_workers"] = True
+        loader_kwargs["prefetch_factor"] = 2
     return (
-        DataLoader(train_ds, batch_size=batch_size, shuffle=True),
-        DataLoader(val_ds, batch_size=batch_size, shuffle=False),
-        DataLoader(test_ds, batch_size=batch_size, shuffle=False),
+        DataLoader(train_ds, batch_size=batch_size, shuffle=True, **loader_kwargs),
+        DataLoader(val_ds, batch_size=batch_size, shuffle=False, **loader_kwargs),
+        DataLoader(test_ds, batch_size=batch_size, shuffle=False, **loader_kwargs),
         train_ds.classes,
     )
 
@@ -135,8 +144,8 @@ def _eval(
     y_pred = []
     with torch.no_grad():
         for x, y in loader:
-            x = x.to(device)
-            y = y.to(device)
+            x = x.to(device, non_blocking=True)
+            y = y.to(device, non_blocking=True)
             logits = model(x)
             loss = criterion(logits, y)
             total_loss += loss.item() * x.size(0)
@@ -163,6 +172,7 @@ def train(
     img_size,
     lr,
     seed,
+    num_workers,
     backend,
 ):
     run_params = {
@@ -172,6 +182,7 @@ def train(
         "img_size": img_size,
         "lr": lr,
         "seed": seed,
+        "num_workers": num_workers,
         "backend": backend,
     }
 
@@ -186,7 +197,7 @@ def train(
         device = resolve_torch_device(backend)
     except BackendError as exc:
         raise SystemExit(f"Invalid backend for training: {exc}") from exc
-    configure_torch_backend(backend, device, verbose=True)
+    configure_torch_backend(backend, device, verbose=False)
     amp_config = resolve_amp_config(device)
     scaler = None
     if amp_config["use_grad_scaler"]:
@@ -195,8 +206,10 @@ def train(
         else:
             scaler = torch.cuda.amp.GradScaler(enabled=True)
 
+    # Pin host memory only when using CUDA-like backends.
+    use_pin_memory = device.type == "cuda"
     train_loader, val_loader, test_loader, labels = _build_data(
-        data_path, img_size, batch_size
+        data_path, img_size, batch_size, num_workers, use_pin_memory
     )
 
     model = _build_model(len(labels), device)
@@ -213,8 +226,8 @@ def train(
         running_loss = 0.0
         samples_seen = 0
         for x, y in train_loader:
-            x = x.to(device)
-            y = y.to(device)
+            x = x.to(device, non_blocking=True)
+            y = y.to(device, non_blocking=True)
             optimizer.zero_grad()
             with torch.autocast(
                 device_type=device.type,
@@ -238,6 +251,12 @@ def train(
         final_train_loss = running_loss / max(samples_seen, 1)
         final_val_loss, val_top1, val_top3, _, _ = _eval(
             model, val_loader, criterion, device
+        )
+        # Epoch-level training log with losses only.
+        print(
+            f"[epoch {epoch + 1}/{epochs}] "
+            f"train_loss={final_train_loss:.6f} "
+            f"val_loss={final_val_loss:.6f}"
         )
         epoch_metrics.append(
             {
@@ -308,6 +327,7 @@ def main():
         img_size=args.img_size,
         lr=args.lr,
         seed=args.seed,
+        num_workers=args.num_workers,
         backend=args.backend,
     )
 
